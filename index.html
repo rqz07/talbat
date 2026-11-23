@@ -59,6 +59,27 @@ nav button span{font-size:20px}nav button.on{color:var(--pri);font-weight:800}
 a.btn{text-decoration:none;display:inline-block}
 .wm{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));text-align:center;font-size:11px;color:var(--mut);opacity:.75;pointer-events:none}
 #t-more{padding-bottom:34px}
+:root{--glass:rgba(255,255,255,.62);--gbrd:rgba(255,255,255,.9)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--glass:rgba(30,42,37,.55);--gbrd:rgba(255,255,255,.08)}}
+:root[data-theme="dark"]{--glass:rgba(30,42,37,.55);--gbrd:rgba(255,255,255,.08)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 12% 0%,rgba(20,166,116,.26),transparent 45%),radial-gradient(circle at 95% 28%,rgba(70,140,230,.17),transparent 42%),radial-gradient(circle at 15% 100%,rgba(240,162,79,.16),transparent 45%)}
+.card,.mini{background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--gbrd);border-radius:26px;box-shadow:0 10px 30px rgba(16,32,26,.08)}
+.mini{border-radius:20px}
+.hero{border-radius:30px;box-shadow:0 14px 34px rgba(14,138,96,.3)}
+input,select{background:rgba(127,127,127,.09);border:1px solid transparent;border-bottom:2px solid var(--brd);border-radius:16px 16px 8px 8px;outline:none}
+input:focus,select:focus{border-bottom-color:var(--pri);background:rgba(127,127,127,.14)}
+.btn{border-radius:999px;box-shadow:0 5px 16px rgba(14,138,96,.28)}
+.btn.gh{box-shadow:none;background:rgba(127,127,127,.08)}
+.seg button{border-radius:999px}
+nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:6px;border-radius:28px;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid var(--gbrd);box-shadow:0 10px 30px rgba(16,32,26,.15)}
+nav button.on{background:rgba(14,138,96,.14);border-radius:20px}
+body{padding-bottom:124px}
+.wm{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+.dcs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.dc{flex:0 0 100px;border-radius:20px;padding:11px 8px;text-align:center;background:rgba(127,127,127,.1)}
+.dc.top{background:linear-gradient(135deg,#14a674,#0a5c40);color:#fff}.dc.top .s{color:rgba(255,255,255,.85)}
+.tg{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(127,127,127,.15);color:var(--mut);margin-top:4px}
+.tg.o{background:rgba(217,130,43,.16);color:var(--owe)}.tg.g{background:rgba(14,138,96,.16);color:var(--pri)}
 </style>
 </head>
 <body>
@@ -110,7 +131,6 @@ a.btn{text-decoration:none;display:inline-block}
   <div class="card"><div class="ttl">القفل بالرقم السري</div><div class="s" id="pinSt"></div>
     <div class="btns" style="justify-content:flex-start;margin-top:10px"><button class="btn sm" id="setPin">تعيين / تغيير</button><button class="btn sm gh" id="delPin">إلغاء القفل</button></div>
     <div class="s">قفل بسيط يمنع الفضول، وليس تشفيراً كاملاً للبيانات.</div></div>
-  <div class="card"><div class="ttl">حقوق المطوّر</div><input id="dvIn" placeholder="اسم المطوّر (اختياري)" autocomplete="off"></div>
   <div class="card"><div class="ttl">نسخ احتياطي</div><div class="s">بياناتك محفوظة في هذا المتصفح فقط. انسخها احتياطاً من وقت لآخر، واستخدمها لنقل البيانات لجوال آخر.</div>
     <div class="btns" style="justify-content:flex-start;margin-top:10px"><button class="btn sm" id="bkE">نسخ البيانات</button><button class="btn sm gh" id="bkI">استرجاع</button></div></div>
 </section>
@@ -123,6 +143,15 @@ a.btn{text-decoration:none;display:inline-block}
   <button data-t="more"><span>⚙️</span>المزيد</button>
 </nav>
 <div id="wm" class="wm hide"></div>
+<div id="payM" class="hide" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center">
+  <div class="card" style="width:100%;max-width:560px;margin:0;border-radius:28px 28px 0 0;background:var(--card);padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))">
+    <div class="ttl" id="pmT"></div><div class="s" id="pmB" style="margin:0 0 6px"></div>
+    <label for="pmA">المبلغ</label><input id="pmA" type="number" inputmode="decimal">
+    <label>طريقة الدفع</label><div class="seg"><button data-pm="تحويل" class="on">تحويل</button><button data-pm="نقدي">نقدي</button><button data-pm="أخرى">أخرى</button></div>
+    <label for="pmN">ملاحظة (اختياري)</label><input id="pmN" placeholder="مثل: رقم الحوالة" autocomplete="off">
+    <label for="pmD">التاريخ</label><input id="pmD" type="date">
+    <button class="btn" id="pmOk">تأكيد</button><button class="btn gh" id="pmNo">إلغاء</button>
+  </div></div>
 
 <script>
 const K='delivery_v2',PK='delivery_pin';
@@ -146,6 +175,9 @@ const rec=o=>o.mode==='fee'?o.fee:o.mode==='snd'?0:o.total;
 const MN={fee:'العميل دفع للمرسل مباشرة',snd:'المرسل استلم المبلغ كاملاً'};
 const bal=n=>Math.round((sum(D.orders.filter(o=>o.sender===n),eff)-sum(D.pays.filter(p=>p.sender===n),p=>p.amount))*100)/100;
 const allNames=()=>[...new Set([...D.senders,...D.orders.map(o=>o.sender)])];
+const age=n=>{if(bal(n)<=0)return '';const ps=D.pays.filter(p=>p.sender===n),os=D.orders.filter(o=>o.sender===n);
+  const ref=ps.length?Math.max(...ps.map(p=>+new Date(p.date))):Math.min(...os.map(o=>+new Date(o.date)));
+  const dd=Math.floor((Date.now()-ref)/864e5);return dd>=1?` · ${ps.length?'آخر تسديد':'أقدم طلب'} قبل ${dd} يوم${dd>=7?' ⚠️':''}`:''};
 
 function keyOf(d){const x=sod(d);if(period==='week')x.setDate(x.getDate()-((x.getDay()+1)%7));if(period==='month')x.setDate(1);return x}
 function labelOf(x){if(period==='day')return dm(x);if(period==='month')return x.getFullYear()+'/'+(x.getMonth()+1);const e=new Date(x);e.setDate(e.getDate()+6);return dm(x)+' - '+dm(e)}
@@ -158,18 +190,23 @@ function renderHome(){
   const fees=sum(D.orders,o=>o.fee),ex=sum(D.exp,e=>e.amount),all=sum(D.orders,rec);
   const names=allNames(),owe=sum(names,n=>Math.max(bal(n),0)),recv=sum(names,n=>Math.max(-bal(n),0));
   const P=[['اليوم',per(t0)],['الأسبوع',per(wk)],['الشهر',per(mo)]];
-  const days=[];for(let i=6;i>=0;i--){const d=new Date(t0);d.setDate(d.getDate()-i);days.push({l:WD[d.getDay()].slice(2)||WD[d.getDay()],v:sum(D.orders.filter(o=>sod(o.date).getTime()===d.getTime()),o=>o.fee)})}
+  const days=[];for(let i=6;i>=0;i--){const d=new Date(t0);d.setDate(d.getDate()-i);const dos=D.orders.filter(o=>sod(o.date).getTime()===d.getTime());days.push({l:WD[d.getDay()].slice(2)||WD[d.getDay()],w:WD[d.getDay()],d:dm(d),n:dos.length,v:sum(dos,o=>o.fee)})}
   const mx=Math.max(...days.map(d=>d.v),1);
   const top=names.map(n=>({n,f:sum(D.orders.filter(o=>o.sender===n),o=>o.fee),c:D.orders.filter(o=>o.sender===n).length})).filter(x=>x.f>0).sort((a,b)=>b.f-a.f).slice(0,3);
   const g={};D.orders.forEach(o=>{const k=keyOf(o.date).getTime();(g[k]=g[k]||{n:0,f:0}).n++;g[k].f+=o.fee});
   const ks=Object.keys(g).sort((a,b)=>b-a);
+  const pm=new Date(mo);pm.setMonth(pm.getMonth()-1);const lm=sum(D.orders.filter(o=>{const t=new Date(o.date);return t>=pm&&t<mo}),o=>o.fee),curM=P[2][1].f;
+  const chg=lm>0?(curM>=lm?'▲ ':'▼ ')+Math.round(Math.abs(curM-lm)/lm*100)+'% عن الشهر الماضي':'';
+  const avg=D.orders.length?fees/D.orders.length:0,dest={};D.orders.forEach(o=>{if(o.to){const k=o.to.trim();dest[k]=(dest[k]||0)+1}});
+  const td=Object.entries(dest).sort((a,b)=>b[1]-a[1])[0],bestD=days.reduce((a,d)=>d.v>a.v?d:a,{v:0});
   $('t-home').innerHTML=`<div class="hero"><div class="l">صافي الأرباح</div><div class="v">${fmt(fees-ex)}</div>
-    <div class="sub"><span>التوصيل ${fmt(fees)}</span><span>المصروفات ${fmt(ex)}</span><span>${D.orders.length} طلب</span></div></div>
+    <div class="sub"><span>التوصيل ${fmt(fees)}</span><span>المصروفات ${fmt(ex)}</span><span>${D.orders.length} طلب</span>${chg?`<span>${chg}</span>`:''}</div></div>
     <div class="g3">${P.map(p=>`<div class="mini"><div class="l">${p[0]}</div><div class="v">${fmt(p[1].f)}</div><div class="s">${p[1].n} طلب</div></div>`).join('')}</div>
     ${D.goal>0?`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><span class="ttl" style="margin:0">هدف الشهر</span><span class="s" style="margin:0">${fmt(P[2][1].f)} من ${fmt(D.goal)}</span></div><div style="height:10px;border-radius:6px;background:var(--bg);margin-top:10px;overflow:hidden"><div style="height:100%;width:${Math.min(100,P[2][1].f/D.goal*100)}%;background:linear-gradient(90deg,var(--pri),#14a674)"></div></div></div>`:''}
     <div class="g2"><div class="mini"><div class="l">المستحق للمرسلين</div><div class="v" style="color:var(--owe)">${fmt(owe)}</div></div>
     <div class="mini"><div class="l">إجمالي المقبوضات</div><div class="v">${fmt(all)}</div></div>${recv>0?`<div class="mini" style="grid-column:span 2"><div class="l">مستحقاتي عند المرسلين</div><div class="v" style="color:var(--pri)">${fmt(recv)}</div></div>`:''}</div>
-    <div class="card"><div class="ttl">أرباح آخر 7 أيام</div><div class="chart">${days.map(d=>`<div class="bar"><div class="bv">${d.v?Math.round(d.v):''}</div><div class="bz"><div class="bf" style="height:${d.v?Math.max(d.v/mx*100,6):1}%"></div></div><div class="bl">${d.l}</div></div>`).join('')}</div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="ttl" style="margin:0">أرباح آخر 7 أيام</span><div class="seg" style="margin:0;width:160px"><button data-cm="bars" class="${CM==='bars'?'on':''}">أعمدة</button><button data-cm="cards" class="${CM==='cards'?'on':''}">بطاقات</button></div></div>${CM==='cards'?`<div class="dcs">${days.map(d=>`<div class="dc${d.v===mx&&d.v>0?' top':''}"><div class="s" style="margin:0">${d.w}</div><div class="s" style="margin:0">${d.d}</div><div class="n" style="margin:6px 0 2px;font-size:15px">${fmt(d.v)}</div><div class="s" style="margin:0">${d.n} طلب</div></div>`).join('')}</div>`:`<div class="chart">${days.map(d=>`<div class="bar"><div class="bv">${d.v?Math.round(d.v):''}</div><div class="bz"><div class="bf" style="height:${d.v?Math.max(d.v/mx*100,6):1}%"></div></div><div class="bl">${d.l}</div></div>`).join('')}</div>`}</div>
+    <div class="g3"><div class="mini"><div class="l">متوسط ربح الطلب</div><div class="v" style="font-size:15px">${fmt(avg)}</div></div><div class="mini"><div class="l">أكثر وجهة</div><div class="v" style="font-size:15px">${td?esc(td[0]):'—'}</div><div class="s">${td?td[1]+' طلب':''}</div></div><div class="mini"><div class="l">أفضل يوم (7 أيام)</div><div class="v" style="font-size:15px">${bestD.v?bestD.w:'—'}</div><div class="s">${bestD.v?fmt(bestD.v):''}</div></div></div>
     ${top.length?`<div class="card"><div class="ttl">أكثر المرسلين ربحاً لي</div>${top.map(x=>`<div class="rp"><div><div class="n">${esc(x.n)}</div><div class="s">${x.c} طلب</div></div><div class="a g">${fmt(x.f)}</div></div>`).join('')}</div>`:''}
     <div class="card"><div class="ttl">تقرير الأرباح</div><div class="seg">${[['day','يومي'],['week','أسبوعي'],['month','شهري']].map(p=>`<button data-p="${p[0]}" class="${period===p[0]?'on':''}">${p[1]}</button>`).join('')}</div>
     ${ks.length?ks.map(k=>`<div class="rp"><div><div class="n">${labelOf(new Date(+k))}</div><div class="s">${g[k].n} طلب</div></div><div class="a g">${fmt(g[k].f)}</div></div>`).join(''):'<div class="empty">لا توجد بيانات بعد</div>'}</div>`;
@@ -200,7 +237,7 @@ function renderLists(){
     <div class="amt"><div class="a ${eff(o)<=0?'z':''}">${fmt(eff(o))}</div><div class="s">${eff(o)<0?'عليه لي':'للمرسل'}</div></div></div>`}).join(''):'<div class="empty">لا توجد طلبات</div>';
   const names=allNames();
   $('sList').innerHTML=names.length?names.map(n=>{const b=bal(n),c=D.orders.filter(o=>o.sender===n).length;
-    return `<div class="sg"><div><div class="n">${esc(n)}</div><div class="s">${c} طلب</div>
+    return `<div class="sg"><div><div class="n">${esc(n)}</div><div class="s">${c} طلب${age(n)}</div>
     <div class="btns" style="justify-content:flex-start"><button class="x" data-st="${esc(n)}">كشف الحساب</button><button class="x d" data-rm="${esc(n)}">حذف</button></div></div>
     <div class="amt"><div class="s" style="margin:0">${b<0?'عليه لي':'له عندي'}</div><div class="a ${b===0?'z':''}">${fmt(Math.abs(b))}</div>
     ${b!==0?`<div class="btns"><button class="btn sm gh" data-part="${esc(n)}">جزء</button><button class="btn sm" data-zero="${esc(n)}">تصفير</button></div>`:''}</div></div>`}).join(''):'<div class="empty">أضف أول مرسل من الأعلى</div>';
@@ -216,21 +253,33 @@ function stmtTotals(n){
   const os=D.orders.filter(o=>o.sender===n),tot=sum(os,rec),fee=sum(os,o=>o.fee),due=sum(os,eff),paid=sum(D.pays.filter(p=>p.sender===n),p=>p.amount);
   return{rec:tot,fee,due,paid,b:Math.round((due-paid)*100)/100,c:os.length};
 }
+function stOrd(r){const o=r.o,e=eff(o),tag=e>0?'<span class="tg o">له</span>':e<0?'<span class="tg g">عليه</span>':'<span class="tg">لا أثر</span>';
+  return `<div class="rp"><div><div class="n">${dm(r.d)} · ${(o.from||o.to)?'من '+esc(o.from||'—')+' إلى '+esc(o.to||'—'):'طلب'}</div>
+  <div class="s">${(o.note||o.cust)?esc(o.note||o.cust)+' · ':''}الطلب ${fmt(o.total)} · توصيل ${fmt(o.fee)}${MN[o.mode]?' · '+MN[o.mode]:''}</div>
+  <div class="s">الرصيد: ${fmt(r.before)} ← <b>${fmt(r.after)}</b></div></div>
+  <div class="amt"><div class="a ${e<0?'g':e===0?'z':''}">${e>0?'+':''}${fmt(e)}</div>${tag}</div></div>`}
+function stPay(r){const p=r.p,out=p.amount>0;
+  return `<div class="rp"><div><div class="n">${out?'سدّدت له':'استلمت منه'} · ${dm(r.d)}</div>
+  <div class="s">${p.method?'💳 '+esc(p.method)+(p.note?' · ':''):''}${p.note?esc(p.note):''}</div>
+  <div class="s">الرصيد قبل: ${fmt(r.before)} ← بعد: <b>${fmt(r.after)}</b></div>
+  <button class="x d" data-delpay="${p.id}" style="padding-right:0">حذف</button></div>
+  <div class="amt"><div class="a g">${out?'−':'+'}${fmt(Math.abs(p.amount))}</div><span class="tg">${out?'مخصوم':'مستلم'}</span></div></div>`}
 function renderStmt(){
   $('sMain').classList.toggle('hide',!!stN);$('stmt').classList.toggle('hide',!stN);
   if(!stN)return;
   const T=stmtTotals(stN);
+  let run=0;const SR=stmtRows(stN).map(r=>{const before=run;run=Math.round((run+(r.o?eff(r.o):-r.p.amount))*100)/100;return{...r,before,after:run}});
   $('stmt').innerHTML=`<button class="x" data-back="1" style="font-size:15px">→ رجوع</button>
   <div class="hero" style="margin:6px 0 12px"><div class="l">${esc(stN)} · ${T.b<0?'المتبقي عليه لي':'المتبقي له'}</div><div class="v">${fmt(Math.abs(T.b))}</div>
   <div class="sub"><span>${T.c} طلب</span><span>ربحي منه ${fmt(T.fee)}</span></div></div>
   <div class="g2"><div class="mini"><div class="l">إجمالي المستلم</div><div class="v">${fmt(T.rec)}</div></div><div class="mini"><div class="l">حسابه من الطلبات</div><div class="v">${fmt(T.due)}</div></div>
   <div class="mini"><div class="l">المسدّد له</div><div class="v">${fmt(T.paid)}</div></div><div class="mini"><div class="l">صافي ربحي منه</div><div class="v" style="color:var(--pri)">${fmt(T.fee)}</div></div></div>
-  <div class="card">${stmtRows(stN).map(r=>r.o?`<div class="rp"><div><div class="n">${dm(r.d)} · ${(r.o.from||r.o.to)?'من '+esc(r.o.from||'—')+' إلى '+esc(r.o.to||'—'):'طلب'}</div><div class="s">${(r.o.note||r.o.cust)?esc(r.o.note||r.o.cust)+' · ':''}الطلب ${fmt(r.o.total)} · توصيل ${fmt(r.o.fee)}${MN[r.o.mode]?' · '+MN[r.o.mode]:''}</div></div><div class="a">${fmt(eff(r.o))}</div></div>`:`<div class="rp"><div><div class="n">${r.p.amount<0?'استلام من المرسل':'تسديد'} · ${dm(r.d)}</div></div><div class="a g">${r.p.amount<0?'+':'-'}${fmt(Math.abs(r.p.amount))}</div></div>`).join('')||'<div class="empty">لا توجد حركات</div>'}</div>
+  <div class="card"><div class="s" style="margin:0 0 4px">الرصيد: موجب = له عندي · سالب = عليه لي</div>${SR.map(r=>r.o?stOrd(r):stPay(r)).join('')||'<div class="empty">لا توجد حركات</div>'}</div>
   <div class="btns" style="justify-content:flex-start">${T.b!==0?`<button class="btn sm" data-zero="${esc(stN)}">تصفير</button><button class="btn sm gh" data-part="${esc(stN)}">تسديد جزء</button>`:''}<button class="btn sm gh" id="stCopy">نسخ الكامل</button><a class="btn sm gh" id="stWa" target="_blank" rel="noopener">واتساب (كامل)</a></div>
   <div class="card" style="margin-top:12px"><div class="ttl">كشف مختصر للمرسل</div><div class="s" style="margin:0 0 10px">بدون رسوم التوصيل الخاصة بك، جاهز للإرسال</div><div class="btns" style="justify-content:flex-start"><a class="btn sm" id="bWa" target="_blank" rel="noopener">واتساب</a><button class="btn sm gh" id="bCp">نسخ</button><button class="btn sm gh" id="bImg">صورة</button><button class="btn sm gh" id="bPdf">PDF</button></div></div>`;
   const stText=()=>{
     const T=stmtTotals(stN);
-    const L=['كشف حساب: '+stN,''].concat(stmtRows(stN).map(r=>r.o?`${dm(r.d)} | ${r.o.from||'-'} إلى ${r.o.to||'-'} | الطلب ${r.o.total} | التوصيل ${r.o.fee} | حسابه ${eff(r.o)}${MN[r.o.mode]?' | '+MN[r.o.mode]:''}`:`${dm(r.d)} | ${r.p.amount<0?'استلام +'+(-r.p.amount):'تسديد -'+r.p.amount}`),['','حقه: '+T.due,'المسدّد: '+T.paid,'المتبقي: '+Math.abs(T.b)+(T.b<0?' (عليه لي)':' (له)')]);
+    const L=['كشف حساب: '+stN,''].concat(stmtRows(stN).map(r=>r.o?`${dm(r.d)} | ${r.o.from||'-'} إلى ${r.o.to||'-'} | الطلب ${r.o.total} | التوصيل ${r.o.fee} | حسابه ${eff(r.o)}${MN[r.o.mode]?' | '+MN[r.o.mode]:''}`:`${dm(r.d)} | ${r.p.amount<0?'استلام +'+(-r.p.amount):'تسديد -'+r.p.amount}${r.p.method?' | '+r.p.method:''}${r.p.note?' | '+r.p.note:''}`),['','حقه: '+T.due,'المسدّد: '+T.paid,'المتبقي: '+Math.abs(T.b)+(T.b<0?' (عليه لي)':' (له)')]);
     return L.join('\n');
   };
   $('stCopy').onclick=async()=>{const s=stText();try{await navigator.clipboard.writeText(s);alert('تم نسخ الكشف، الصقه في واتساب')}catch(e){prompt('انسخ الكشف',s)}};
@@ -243,7 +292,7 @@ const dfull=d=>{d=new Date(d);return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getF
 function brief(n){
   const T=stmtTotals(n);
   const rows=stmtRows(n).map(r=>{
-    if(r.p)return{d:dfull(r.d),t:r.p.amount<0?'استلام منك':'تسديد لك',v:(r.p.amount<0?'+':'-')+fmt(Math.abs(r.p.amount))};
+    if(r.p)return{d:dfull(r.d),t:(r.p.amount<0?'استلام منك':'تسديد لك')+(r.p.method?' ('+r.p.method+')':''),v:(r.p.amount<0?'+':'-')+fmt(Math.abs(r.p.amount))};
     const o=r.o,l=((o.from?'من '+o.from+' ':'')+(o.to?'إلى '+o.to:''))||'طلب';
     if(o.mode==='fee')return{d:dfull(r.d),t:l+' (دفع مباشر)',v:'مدفوع لك'};
     if(o.mode==='snd')return{d:dfull(r.d),t:l+' (خصم توصيل)',v:'-'+fmt(o.fee)};
@@ -328,9 +377,11 @@ document.body.addEventListener('click',e=>{
   if(d.delx&&confirm('حذف المصروف؟')){D.exp=D.exp.filter(x=>x.id!=d.delx);save();render()}
   if(d.rm){if(bal(d.rm)!==0)return alert('حساب هذا المرسل غير مصفّر، صفّره أولاً');
     if(confirm('حذف '+d.rm+' من القائمة؟ (طلباته السابقة تبقى محفوظة)')){D.senders=D.senders.filter(n=>n!==d.rm);save();render()}}
-  if(d.zero&&confirm('تصفير حساب '+d.zero+'؟ ('+fmt(bal(d.zero))+')')){D.pays.push({id:Date.now(),sender:d.zero,amount:bal(d.zero),date:new Date().toISOString()});save();render()}
-  if(d.part){const v=parseFloat(prompt('كم المبلغ المسدّد لـ '+d.part+'؟'));
-    const bb=bal(d.part);if(v>0&&v<=Math.abs(bb)){D.pays.push({id:Date.now(),sender:d.part,amount:bb<0?-v:v,date:new Date().toISOString()});save();render()}else if(v>0)alert('المبلغ أكبر من المستحق')}
+  if(d.zero)openPay(d.zero,true);
+  if(d.part)openPay(d.part,false);
+  if(d.pm){payMeth=d.pm;document.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x.dataset.pm===d.pm))}
+  if(d.delpay&&confirm('حذف هذه الحركة؟ سيعود الرصيد كما كان.')){D.pays=D.pays.filter(p=>p.id!=d.delpay);save();render()}
+  if(d.cm){CM=d.cm;try{localStorage.setItem('delivery_cm',CM)}catch(e){}renderHome()}
 });
 
 /* القفل */
@@ -349,9 +400,16 @@ $('bkI').onclick=()=>{const s=prompt('الصق نص النسخة الاحتيا�
 
 const TK='delivery_theme';let TH='auto';try{TH=localStorage.getItem(TK)||'auto'}catch(e){}
 function applyTheme(){const r=document.documentElement;TH==='auto'?r.removeAttribute('data-theme'):r.setAttribute('data-theme',TH);document.querySelectorAll('[data-th]').forEach(b=>b.classList.toggle('on',b.dataset.th===TH))}
-function wm(){$('wm').textContent='© 2026 · جميع الحقوق محفوظة '+(D.dev?'لـ '+D.dev:'للمطوّر')}
+function wm(){$('wm').textContent='© 2026 · جميع الحقوق محفوظة لـ رمزي اليافعي'}
 $('gSave').onclick=()=>{D.goal=parseFloat($('gIn').value)||0;save();render()};
-$('dvIn').value=D.dev||'';$('dvIn').oninput=()=>{D.dev=$('dvIn').value.trim();save();wm()};
+let CM='bars',payFor=null,payMeth='تحويل';try{CM=localStorage.getItem('delivery_cm')||'bars'}catch(e){}
+function openPay(n,full){payFor=n;payMeth='تحويل';document.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x.dataset.pm==='تحويل'));
+  const b=bal(n);$('pmT').textContent=(b<0?'استلام من ':'تسديد لـ ')+n;$('pmB').textContent='الرصيد الحالي: '+fmt(Math.abs(b))+(b<0?' (عليه لي)':' (له)');
+  $('pmA').value=full?Math.abs(b):'';$('pmN').value='';$('pmD').value=tstr();$('payM').classList.remove('hide')}
+$('pmOk').onclick=()=>{const v=parseFloat($('pmA').value),b=bal(payFor);if(!(v>0))return alert('اكتب المبلغ');if(v>Math.abs(b))return alert('المبلغ أكبر من الرصيد');
+  const dv=$('pmD').value,dt=dv?new Date(dv+'T12:00:00'):new Date();
+  D.pays.push({id:Date.now(),sender:payFor,amount:b<0?-v:v,date:dt.toISOString(),method:payMeth,note:$('pmN').value.trim()});save();$('payM').classList.add('hide');render()};
+$('pmNo').onclick=()=>$('payM').classList.add('hide');
 applyTheme();wm();$('fDate').value=tstr();render();preview();
 </script>
 </body>
