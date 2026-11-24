@@ -94,9 +94,12 @@ body{padding-bottom:124px}
   <label for="fSender">المرسل</label><select id="fSender"></select>
   <label for="fMode">طريقة الدفع</label><select id="fMode"><option value="me">استلمت المبلغ كاملاً</option><option value="fee">استلمت التوصيل فقط (العميل حوّل للمرسل)</option><option value="snd">العميل حوّل المبلغ كاملاً للمرسل (يُخصم توصيلي من حسابه)</option></select>
   <div class="row2">
-    <div><label for="fFrom">من</label><input id="fFrom" placeholder="حي..." autocomplete="off"></div>
-    <div><label for="fTo">إلى</label><input id="fTo" placeholder="حي..." autocomplete="off"></div>
+    <div><label for="fFrom">من</label><input id="fFrom" list="places" placeholder="حي..." autocomplete="off"></div>
+    <div><label for="fTo">إلى</label><input id="fTo" list="places" placeholder="حي..." autocomplete="off"></div>
   </div>
+  <datalist id="places"></datalist>
+  <div class="btns" style="justify-content:flex-start;margin-top:8px"><button class="btn sm gh" id="mapBtn">🗺️ تحديد من الخريطة</button></div>
+  <div id="hint" class="s" style="line-height:1.9"></div>
   <label for="fNote">ملاحظات</label><input id="fNote" placeholder="اختياري" autocomplete="off">
   <label for="fDate">تاريخ الطلب</label><input id="fDate" type="date">
   <div class="row2">
@@ -143,6 +146,12 @@ body{padding-bottom:124px}
   <button data-t="more"><span>⚙️</span>المزيد</button>
 </nav>
 <div id="wm" class="wm hide"></div>
+<div id="mapM" class="hide" style="position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column">
+  <div style="padding:calc(10px + env(safe-area-inset-top,0px)) 12px 8px;display:flex;gap:8px;align-items:center"><button class="x" id="mapClose" style="font-size:15px">✕</button><input id="mapQ" placeholder="ابحث عن حي أو مكان" style="flex:1"><button class="btn sm" id="mapGo">بحث</button></div>
+  <div class="seg" style="margin:0 12px 8px"><button data-mp="a" class="on">📍 من (الاستلام)</button><button data-mp="b">🏁 إلى (التسليم)</button></div>
+  <div id="map" style="flex:1;min-height:200px"></div>
+  <div class="card" style="margin:0;border-radius:26px 26px 0 0;background:var(--card);padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px))"><div id="mapInfo" class="s" style="margin:0 0 10px;line-height:1.8">اضغط على الخريطة لتحديد النقطة</div><div class="btns" style="justify-content:space-between"><button class="btn sm gh" id="mapMe">📡 موقعي</button><button class="btn sm" id="mapOk">اعتماد</button></div></div>
+</div>
 <div id="payM" class="hide" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center">
   <div class="card" style="width:100%;max-width:560px;margin:0;border-radius:28px 28px 0 0;background:var(--card);padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))">
     <div class="ttl" id="pmT"></div><div class="s" id="pmB" style="margin:0 0 6px"></div>
@@ -219,6 +228,7 @@ function renderLists(){
   const fs=[...new Set(D.orders.map(o=>o.fee).filter(f=>f>0))].slice(0,6);
   $('chips').innerHTML=fs.length?'<span class="s" style="margin:0">آخر القيم:</span>'+fs.map(f=>`<button class="btn sm gh" data-fee="${f}">${f}</button>`).join(''):'';
   $('gIn').value=D.goal||'';
+  $('places').innerHTML=[...new Set(D.orders.flatMap(o=>[o.from,o.to]).filter(Boolean))].map(x=>`<option value="${esc(x)}">`).join('');
   const cf=$('fltS').value;
   $('fltS').innerHTML='<option value="">كل المرسلين</option>'+allNames().map(n=>`<option ${n===cf?'selected':''}>${esc(n)}</option>`).join('');
   const fl=$('fltS').value,fp=$('fltP').value,q=$('qS').value.trim().toLowerCase(),t0=sod(new Date()),wk0=new Date(t0),mo0=new Date(t0);
@@ -232,7 +242,7 @@ function renderLists(){
     const k=dayLbl(o.date),h=k===last?'':`<div class="dh">${k}</div>`;last=k;const nt=o.note||o.cust||'';
     return `${h}<div class="item"><div style="min-width:0"><div class="n">${esc(o.sender)}</div>
     ${(o.from||o.to)?`<div class="s">📍 من ${esc(o.from||'—')} إلى ${esc(o.to||'—')}</div>`:''}${nt?`<div class="s">📝 ${esc(nt)}</div>`:''}
-    <div class="s">الطلب ${fmt(o.total)} · توصيل ${fmt(o.fee)}</div>${MN[o.mode]?`<div class="s">💳 ${MN[o.mode]}</div>`:''}
+    <div class="s">الطلب ${fmt(o.total)} · توصيل ${fmt(o.fee)}${o.km?' · 🚗 '+o.km+' كم':''}</div>${MN[o.mode]?`<div class="s">💳 ${MN[o.mode]}</div>`:''}
     <div class="btns" style="justify-content:flex-start"><button class="x" data-edit="${o.id}">تعديل</button><button class="x" data-dup="${o.id}">تكرار</button><button class="x d" data-del="${o.id}">حذف</button></div></div>
     <div class="amt"><div class="a ${eff(o)<=0?'z':''}">${fmt(eff(o))}</div><div class="s">${eff(o)<0?'عليه لي':'للمرسل'}</div></div></div>`}).join(''):'<div class="empty">لا توجد طلبات</div>';
   const names=allNames();
@@ -342,7 +352,7 @@ function show(t){
   window.scrollTo(0,0);
 }
 function preview(){const t=parseFloat($('fTotal').value)||0,f=parseFloat($('fFee').value)||0,m=$('fMode').value,v=m==='fee'?0:m==='snd'?-f:t-f;$('pFee').textContent=fmt(f);$('pSend').textContent=(v>0?'+':'')+fmt(v)}
-function clearForm(){['fFrom','fTo','fNote','fTotal','fFee'].forEach(i=>$(i).value='');$('fDate').value=tstr();editId=null;$('fTtl').textContent='طلب جديد';$('save').textContent='حفظ الطلب';$('cancelEdit').classList.add('hide');preview()}
+function clearForm(){['fFrom','fTo','fNote','fTotal','fFee'].forEach(i=>$(i).value='');$('fDate').value=tstr();editId=null;$('fTtl').textContent='طلب جديد';$('save').textContent='حفظ الطلب';$('cancelEdit').classList.add('hide');mapSel={};preview();routeHint()}
 ['fTotal','fFee'].forEach(i=>$(i).addEventListener('input',preview));$('fMode').addEventListener('change',preview);
 
 $('save').onclick=()=>{
@@ -352,6 +362,7 @@ $('save').onclick=()=>{
   if(!(fee>=0)||fee>total)return alert('اكتب قيمة التوصيل (لا تزيد عن المبلغ)');
   const dv=$('fDate').value,dt=dv?new Date(dv+'T12:00:00'):new Date();
   const o={mode:$('fMode').value,sender,from:$('fFrom').value.trim(),to:$('fTo').value.trim(),note:$('fNote').value.trim(),total,fee,date:dt.toISOString()};
+  if(mapSel.km){o.km=mapSel.km;o.fl=mapSel.a;o.tl=mapSel.b}
   if(editId){const i=D.orders.findIndex(x=>x.id===editId);D.orders[i]={...D.orders[i],...o,cust:undefined}}else D.orders.unshift({id:Date.now(),...o});
   save();clearForm();render();show('list');
 };
@@ -369,9 +380,9 @@ document.body.addEventListener('click',e=>{
   if(d.edit){const o=D.orders.find(x=>x.id==d.edit);if(!o)return;if(!D.senders.includes(o.sender))D.senders.push(o.sender);renderLists();
     $('fSender').value=o.sender;$('fMode').value=o.mode||'me';$('fFrom').value=o.from||'';$('fTo').value=o.to||'';$('fNote').value=o.note||o.cust||'';$('fTotal').value=o.total;$('fFee').value=o.fee;
     const x=new Date(o.date);$('fDate').value=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
-    editId=o.id;$('fTtl').textContent='تعديل الطلب';$('save').textContent='حفظ التعديل';$('cancelEdit').classList.remove('hide');preview();show('add')}
+    editId=o.id;$('fTtl').textContent='تعديل الطلب';$('save').textContent='حفظ التعديل';$('cancelEdit').classList.remove('hide');mapSel={a:o.fl,b:o.tl,km:o.km};routeHint();preview();show('add')}
   if(d.dup){const o=D.orders.find(x=>x.id==d.dup);if(!o)return;if(!D.senders.includes(o.sender))D.senders.push(o.sender);renderLists();clearForm();
-    $('fSender').value=o.sender;$('fMode').value=o.mode||'me';$('fFrom').value=o.from||'';$('fTo').value=o.to||'';$('fNote').value=o.note||o.cust||'';$('fTtl').textContent='طلب جديد (نسخة)';preview();show('add')}
+    $('fSender').value=o.sender;$('fMode').value=o.mode||'me';$('fFrom').value=o.from||'';$('fTo').value=o.to||'';$('fNote').value=o.note||o.cust||'';$('fTtl').textContent='طلب جديد (نسخة)';mapSel={a:o.fl,b:o.tl,km:o.km};routeHint();preview();show('add')}
   if(d.th){TH=d.th;try{localStorage.setItem(TK,TH)}catch(e){}applyTheme()}
   if(d.del&&confirm('حذف هذا الطلب؟')){D.orders=D.orders.filter(o=>o.id!=d.del);save();render()}
   if(d.delx&&confirm('حذف المصروف؟')){D.exp=D.exp.filter(x=>x.id!=d.delx);save();render()}
@@ -379,6 +390,7 @@ document.body.addEventListener('click',e=>{
     if(confirm('حذف '+d.rm+' من القائمة؟ (طلباته السابقة تبقى محفوظة)')){D.senders=D.senders.filter(n=>n!==d.rm);save();render()}}
   if(d.zero)openPay(d.zero,true);
   if(d.part)openPay(d.part,false);
+  if(d.mp){mapMode=d.mp;mpSeg()}
   if(d.pm){payMeth=d.pm;document.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x.dataset.pm===d.pm))}
   if(d.delpay&&confirm('حذف هذه الحركة؟ سيعود الرصيد كما كان.')){D.pays=D.pays.filter(p=>p.id!=d.delpay);save();render()}
   if(d.cm){CM=d.cm;try{localStorage.setItem('delivery_cm',CM)}catch(e){}renderHome()}
@@ -402,6 +414,66 @@ const TK='delivery_theme';let TH='auto';try{TH=localStorage.getItem(TK)||'auto'}
 function applyTheme(){const r=document.documentElement;TH==='auto'?r.removeAttribute('data-theme'):r.setAttribute('data-theme',TH);document.querySelectorAll('[data-th]').forEach(b=>b.classList.toggle('on',b.dataset.th===TH))}
 function wm(){$('wm').textContent='© 2026 · جميع الحقوق محفوظة لـ رمزي اليافعي'}
 $('gSave').onclick=()=>{D.goal=parseFloat($('gIn').value)||0;save();render()};
+const nz=s=>(s||'').toString().trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/(^|\s)ال/g,'$1').replace(/\s+/g,' ');
+function routeHist(f,t){const a=nz(f),b=nz(t);if(!a||!b)return{same:[],rev:[]};
+  return{same:D.orders.filter(o=>nz(o.from)===a&&nz(o.to)===b),rev:D.orders.filter(o=>nz(o.from)===b&&nz(o.to)===a)}}
+function kmRate(){const xs=D.orders.filter(o=>o.km>0&&o.fee>0).slice(0,30).map(o=>o.fee/o.km).sort((a,b)=>a-b);return xs.length>=3?xs[Math.floor(xs.length/2)]:0}
+function routeHint(){
+  const f=$('fFrom').value,t=$('fTo').value,H=routeHist(f,t),Ls=[],ch=[];
+  if(mapSel.km)Ls.push('🚗 '+mapSel.km+' كم');
+  if(H.same.length){const o=H.same[0];Ls.push(`📌 نفس المسار: آخر مرة <b>${o.fee}</b> ر.س (${dayLbl(o.date)})${H.same.length>1?' · '+H.same.length+' مرات':''}`);[...new Set(H.same.map(x=>x.fee))].slice(0,4).forEach(x=>ch.push([x,x]))}
+  else if(H.rev.length){const o=H.rev[0];Ls.push(`↔️ المسار المعاكس: آخر مرة <b>${o.fee}</b> ر.س`);ch.push([o.fee,o.fee])}
+  const rate=kmRate();if(mapSel.km&&rate){const e=Math.round(mapSel.km*rate);Ls.push(`💡 حسب مشاويرك السابقة ≈ <b>${e}</b> ر.س`);ch.push([e,'≈'+e])}
+  $('hint').innerHTML=Ls.join('<br>')+(ch.length?`<div class="btns" style="justify-content:flex-start">${ch.map(c=>`<button class="btn sm gh" data-fee="${c[0]}">${c[1]}</button>`).join('')}</div>`:'');
+}
+['fFrom','fTo'].forEach(i=>$(i).addEventListener('input',routeHint));
+/* الخريطة */
+let mapSel={},MAP=null,mk={a:null,b:null},mapMode='a',mapTmp={};
+const LF='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
+function loadLeaflet(){return window.L?Promise.resolve():new Promise((res,rej)=>{let n=0;const ok=()=>{if(++n===2)res()};
+  const l=document.createElement('link');l.rel='stylesheet';l.href=LF+'leaflet.css';l.onload=ok;l.onerror=rej;
+  const sc=document.createElement('script');sc.src=LF+'leaflet.js';sc.onload=ok;sc.onerror=rej;document.head.append(l,sc)})}
+const hav=(a,b)=>{const t=x=>x*Math.PI/180,dl=t(b[0]-a[0]),dn=t(b[1]-a[1]),h=Math.sin(dl/2)**2+Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+const mpSeg=()=>document.querySelectorAll('[data-mp]').forEach(x=>x.classList.toggle('on',x.dataset.mp===mapMode));
+const ic=(t,c)=>L.divIcon({className:'',html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${c};border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><b style="transform:rotate(45deg);color:#fff;font-size:14px">${t}</b></div>`,iconSize:[32,32],iconAnchor:[16,32]});
+function putMk(k,ll){if(mk[k])mk[k].setLatLng(ll);else{mk[k]=L.marker(ll,{icon:ic(k==='a'?'أ':'ب',k==='a'?'#0e8a60':'#d9534f'),draggable:true}).addTo(MAP);mk[k].on('dragend',()=>setPt(k,mk[k].getLatLng()))}}
+function mapInfo(){const T=mapTmp;if(!T.a&&!T.b){$('mapInfo').textContent='اضغط على الخريطة لتحديد نقطة الاستلام ثم التسليم، أو ابحث عن مكان';return}
+  let h=`<b>من:</b> ${esc(T.an||'—')} · <b>إلى:</b> ${esc(T.bn||'—')}`;
+  if(T.km)h+=`<br>🚗 ${T.km} كم${T.min?' · نحو '+T.min+' دقيقة':''}${T.est?' (تقدير)':''}`;
+  const H=routeHist(T.an,T.bn),rate=kmRate();
+  if(H.same.length)h+=`<br>📌 نفس المسار: آخر مرة <b>${H.same[0].fee}</b> ر.س`;else if(H.rev.length)h+=`<br>↔️ المسار المعاكس: آخر مرة <b>${H.rev[0].fee}</b> ر.س`;
+  if(T.km&&rate)h+=`<br>💡 حسب مشاويرك ≈ <b>${Math.round(T.km*rate)}</b> ر.س`;
+  $('mapInfo').innerHTML=h}
+async function revName(k,p){mapTmp[k+'n']='…';mapInfo();
+  try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=ar&lat=${p[0]}&lon=${p[1]}`);const j=await r.json();if(mapTmp[k]!==p)return;const a=j.address||{};
+    mapTmp[k+'n']=a.suburb||a.neighbourhood||a.quarter||a.city_district||a.village||a.town||a.city||(j.display_name||'').split('،')[0]||''}catch(e){if(mapTmp[k]===p)mapTmp[k+'n']=''}
+  mapInfo()}
+async function calcRoute(){const a=mapTmp.a,b=mapTmp.b;if(!a||!b){mapTmp.km=0;mapInfo();return}
+  mapTmp.km=Math.round(hav(a,b)*13)/10;mapTmp.min=0;mapTmp.est=1;mapInfo();
+  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a[1]},${a[0]};${b[1]},${b[0]}?overview=false`);const j=await r.json();
+    if(mapTmp.a===a&&mapTmp.b===b&&j.routes&&j.routes[0]){mapTmp.km=Math.round(j.routes[0].distance/100)/10;mapTmp.min=Math.round(j.routes[0].duration/60);mapTmp.est=0;mapInfo()}}catch(e){}}
+function setPt(k,ll){const p=[ll.lat,ll.lng];mapTmp[k]=p;putMk(k,ll);revName(k,p);calcRoute();if(k==='a'&&!mapTmp.b){mapMode='b';mpSeg()}}
+async function openMap(){
+  $('mapM').classList.remove('hide');
+  try{await loadLeaflet()}catch(e){$('mapInfo').textContent='تعذّر تحميل الخريطة. الخريطة تعمل من نسخة الموقع (GitHub) وتحتاج إنترنت، ولا تعمل داخل معاينة Claude.';return}
+  if(!MAP){const last=D.orders.find(o=>o.fl);MAP=L.map('map').setView(last?last.fl:[24.7136,46.6753],12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(MAP);MAP.on('click',e=>setPt(mapMode,e.latlng))}
+  ['a','b'].forEach(k=>{if(mk[k]){MAP.removeLayer(mk[k]);mk[k]=null}});
+  mapTmp={a:mapSel.a||null,b:mapSel.b||null,an:$('fFrom').value,bn:$('fTo').value,km:mapSel.km||0};
+  ['a','b'].forEach(k=>{if(mapTmp[k])putMk(k,{lat:mapTmp[k][0],lng:mapTmp[k][1]})});
+  mapMode=mapTmp.a&&!mapTmp.b?'b':'a';mpSeg();mapInfo();
+  setTimeout(()=>{MAP.invalidateSize();if(mapTmp.a&&mapTmp.b)MAP.fitBounds([mapTmp.a,mapTmp.b],{padding:[40,40]});else if(mapTmp.a)MAP.setView(mapTmp.a,14)},250)}
+$('mapBtn').onclick=openMap;
+$('mapClose').onclick=()=>$('mapM').classList.add('hide');
+$('mapOk').onclick=()=>{const T=mapTmp;if(!T.a||!T.b)return alert('حدّد النقطتين: من وإلى');
+  if(T.an&&T.an!=='…')$('fFrom').value=T.an;if(T.bn&&T.bn!=='…')$('fTo').value=T.bn;
+  mapSel={a:T.a,b:T.b,km:T.km||0};$('mapM').classList.add('hide');routeHint()};
+$('mapMe').onclick=()=>{if(!MAP)return;if(!navigator.geolocation)return alert('الموقع غير متاح');
+  navigator.geolocation.getCurrentPosition(q=>{const ll={lat:q.coords.latitude,lng:q.coords.longitude};MAP.setView(ll,15);setPt(mapMode,ll)},()=>alert('اسمح بالوصول للموقع من إعدادات المتصفح'),{enableHighAccuracy:true,timeout:10000})};
+$('mapGo').onclick=async()=>{const q=$('mapQ').value.trim();if(!q||!MAP)return;
+  try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ar&countrycodes=sa&q='+encodeURIComponent(q));const j=await r.json();
+    if(!j[0])return alert('ما لقيت نتيجة');const ll={lat:+j[0].lat,lng:+j[0].lon};MAP.setView(ll,15);setPt(mapMode,ll)}catch(e){alert('تعذّر البحث، تأكد من الإنترنت')}};
+$('mapQ').addEventListener('keydown',e=>{if(e.key==='Enter')$('mapGo').click()});
 let CM='bars',payFor=null,payMeth='تحويل';try{CM=localStorage.getItem('delivery_cm')||'bars'}catch(e){}
 function openPay(n,full){payFor=n;payMeth='تحويل';document.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x.dataset.pm==='تحويل'));
   const b=bal(n);$('pmT').textContent=(b<0?'استلام من ':'تسديد لـ ')+n;$('pmB').textContent='الرصيد الحالي: '+fmt(Math.abs(b))+(b<0?' (عليه لي)':' (له)');
